@@ -1,26 +1,19 @@
 Heroku buildpack: precompiled pdftk
 ======================
 
-Based on https://github.com/millie/heroku-buildpack-ruby-pdftk,
-but modified for use with https://github.com/ddollar/heroku-buildpack-multi.
+Based on https://github.com/millie/heroku-buildpack-phantomjs.
+For use with https://github.com/ddollar/heroku-buildpack-multi.
 
-How to install:
+For use in a multi buildpack:
 
-1) Download PDFTK source (compiled for Heroku's Cedar Stack) from http://github.com/millie/pdftk-source
+1) Configure heroku for multiple build packs.
 
-2) Upload the tar.gz to your own S3 bucket.  Make it public.  Remember the S3 URL of the tar.gz file.
+```
+heroku config:set BUILDPACK_URL=https://github.com/ddollar/heroku-buildpack-multi.git
+```
 
-3) Clone this repo to your own.
+2) Add pdftk to `.buildpacks` file
 
-4) Update lib/custom/pdftk.rb source_url method to return the S3 URL from step 2.
-
-5) Add your cloned repo to your project's .buildpacks file.
-
-6) Add config vars to heroku like so
-
-```bash
-heroku config:set \
-BUILDPACK_URL=https://github.com/ddollar/heroku-buildpack-multi.git \
-PATH=[your current PATH var]:/app/vendor/pdftk/bin \
-LD_LIBRARY_PATH=[your current LD_LIBRARY_PATH var (if you have set before)]:/app/vendor/pdftk/lib
+```
+echo "https://github.com/shake-apps/heroku-buildpack-pdftk.git" >> .buildpacks
 ```

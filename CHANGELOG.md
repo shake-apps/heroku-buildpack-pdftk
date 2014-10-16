@@ -1,3 +1,10 @@
+## v43 (2014/10/17)
+
+Features:
+
+* Change to Bash Script
+* Reference pdftk directly
+
 ## v42 (2014/02/16)
 
 Features:
