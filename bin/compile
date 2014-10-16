@@ -1,7 +1,38 @@
-#!/usr/bin/env ruby
-# sync output
-$stdout.sync = true
+#!/usr/bin/env bash
 
-$:.unshift File.expand_path("../../lib", __FILE__)
-require "base_custom"
-BaseCustom.compile(ARGV[0], ARGV[1])
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+if [ -d "$ENV_DIR" ] && [ -a "$ENV_DIR/PDFTK_URL" ]; then
+  echo "-----> Exporting Environment variables"
+  echo "       PDFTK_URL=$(cat $ENV_DIR/PDFTK_URL)"
+  export "PDFTK_URL=$(cat $ENV_DIR/PDFTK_URL)"
+fi
+
+# make sure PDFTK_URL is set
+if [ -z "$PDFTK_URL" ]; then
+  echo "-----> You need you set PDFTK_URL"
+  echo "       You also need to host PDFTK somewhere"
+  exit 1
+fi
+
+mkdir -p $CACHE_DIR
+mkdir -p $CACHE_DIR/pdftk
+mkdir -p $BUILD_DIR/vendor
+mkdir -p $BUILD_DIR/.profile.d
+
+rm -rf $BUILD_DIR/vendor/$ARCHIVE
+
+if ! [ -e $CACHE_DIR/pdftk.tar.gz ]; then
+  echo "-----> Fetching PDFTK binaries from $PDFTK_URL"
+  curl $PDFTK_URL -L -s -o $CACHE_DIR/pdftk.tar.gz
+fi
+
+echo "-----> Extracting PDFTK binaries to ${BUILD_DIR}/vendor/pdftk"
+tar -xf $CACHE_DIR/pdftk.tar.gz -C $CACHE_DIR/pdftk
+mv $CACHE_DIR/pdftk $BUILD_DIR/vendor
+
+echo "-----> exporting PATH and LIBRARY_PATH"
+echo 'export PATH="$PATH:vendor/pdftk/bin"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:vendor/pdftk/lib"' >> $BUILD_DIR/.profile.d/pdftk.sh

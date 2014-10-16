@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
-# bin/detect <build-dir>
 echo 'heroku-pdftk-buildpack'
 exit 0
