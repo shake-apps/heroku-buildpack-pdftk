@@ -1,17 +1,8 @@
 #!/usr/bin/env bash
 
-BUILD_DIR=$1
-CACHE_DIR=$2
-ENV_DIR=$3
-
-FILE_NAME='pdftk.tar.gz'
-ARCHIVE_NAME='pdftk'
-PROFILE_PATH="$BUILD_DIR/.profile.d/pdftk.sh"
-
-mkdir -p $CACHE_DIR
-mkdir -p $CACHE_DIR/$ARCHIVE_NAME
-mkdir -p $BUILD_DIR/vendor
-mkdir -p "$BUILD_DIR/.profile.d"
+BUILD_DIR=$1 # .build
+CACHE_DIR=$2 # .cache
+ENV_DIR=$3   # .env
 
 if [ -d "$ENV_DIR" ] && [ -a "$ENV_DIR/PDFTK_URL" ]; then
   echo "-----> Exporting Environment variables"
@@ -26,14 +17,25 @@ if [ -z "$PDFTK_URL" ]; then
   exit 1
 fi
 
+FILE_NAME='pdftk.tar.gz'
+ARCHIVE_NAME='pdftk'
+PROFILE_PATH="$BUILD_DIR/.profile.d/pdftk.sh"
+
+mkdir -p $CACHE_DIR               # .cache
+mkdir -p $CACHE_DIR/$ARCHIVE_NAME # .cache/pdftk
+mkdir -p $BUILD_DIR/vendor        # .build/vendor
+mkdir -p $BUILD_DIR/.profile.d    # .build/.profile.d
+
+rm -rf $BUILD_DIR/vendor/$ARCHIVE # .build/vendor/pdftk
+
 if ! [ -e $CACHE_DIR/$FILE_NAME ]; then
   echo "-----> Fetching PDFTK binaries from $PDFTK_URL"
-  curl $PDFTK_URL -L -o $CACHE_DIR/$FILE_NAME
+  curl $PDFTK_URL -L -s -o $CACHE_DIR/$FILE_NAME
 fi
 
 echo "-----> Extracting PDFTK binaries to ${BUILD_DIR}/vendor/pdftk"
-tar jxf $CACHE_DIR/$FILE_NAME -C $CACHE_DIR
-mv $CACHE_DIR/$ARCHIVE_NAME $BUILD_DIR/vendor/pdftk
+tar -xf $CACHE_DIR/$FILE_NAME -C $CACHE_DIR/$ARCHIVE_NAME
+mv $CACHE_DIR/$ARCHIVE_NAME $BUILD_DIR/vendor
 
 echo "-----> exporting PATH and LIBRARY_PATH"
 echo 'export PATH="$PATH:vendor/pdftk/bin"' >> $PROFILE_PATH
