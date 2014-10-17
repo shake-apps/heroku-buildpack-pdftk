@@ -1,38 +1,29 @@
 #!/usr/bin/env bash
 
+# fail fast
+set -e
+
 BUILD_DIR=$1
 CACHE_DIR=$2
-ENV_DIR=$3
+VENDOR_DIR=$BUILD_DIR/vendor
 
-if [ -d "$ENV_DIR" ] && [ -a "$ENV_DIR/PDFTK_URL" ]; then
-  echo "-----> Exporting Environment variables"
-  echo "       PDFTK_URL=$(cat $ENV_DIR/PDFTK_URL)"
-  export "PDFTK_URL=$(cat $ENV_DIR/PDFTK_URL)"
-fi
-
-# make sure PDFTK_URL is set
-if [ -z "$PDFTK_URL" ]; then
-  echo "-----> You need you set PDFTK_URL"
-  echo "       You also need to host PDFTK somewhere"
-  exit 1
-fi
+PDFTK_URL='https://github.com/SirRawlins/pdftk-source/raw/master/pdftk.tar.gz'
+PDFTK_DOWNLOAD=$CACHE_DIR/pdftk.tar.gz
+PDFTK_VENDOR=$BUILD_DIR/vendor/pdftk
+PDFTK_PROFILE=$BUILD_DIR/.profile.d
 
 mkdir -p $CACHE_DIR
-mkdir -p $CACHE_DIR/pdftk
-mkdir -p $BUILD_DIR/vendor
-mkdir -p $BUILD_DIR/.profile.d
+mkdir -p $PDFTK_VENDOR
+mkdir -p $PDFTK_PROFILE
 
-rm -rf $BUILD_DIR/vendor/$ARCHIVE
-
-if ! [ -e $CACHE_DIR/pdftk.tar.gz ]; then
+if ! [ -e $PDFTK_DOWNLOAD ]; then
   echo "-----> Fetching PDFTK binaries from $PDFTK_URL"
-  curl $PDFTK_URL -L -s -o $CACHE_DIR/pdftk.tar.gz
+  curl $PDFTK_URL -L -s -o $PDFTK_DOWNLOAD
 fi
 
-echo "-----> Extracting PDFTK binaries to ${BUILD_DIR}/vendor/pdftk"
-tar -xf $CACHE_DIR/pdftk.tar.gz -C $CACHE_DIR/pdftk
-mv $CACHE_DIR/pdftk $BUILD_DIR/vendor
+echo "-----> Extracting PDFTK binaries from ${PDFTK_DOWNLOAD} to ${PDFTK_VENDOR}"
+tar -xf $PDFTK_DOWNLOAD -C $PDFTK_VENDOR
 
-echo "-----> exporting PATH and LIBRARY_PATH"
+echo "-----> Exporting PATH and LIBRARY_PATH"
 echo 'export PATH="$PATH:vendor/pdftk/bin"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:vendor/pdftk/lib"' >> $BUILD_DIR/.profile.d/pdftk.sh
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:vendor/pdftk/lib"' >> $PDFTK_PROFILE/pdftk.sh
